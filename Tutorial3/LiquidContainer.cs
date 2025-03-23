@@ -1,60 +1,32 @@
 namespace Tutorial3;
 
-public class LiquidContainer : Container, IHazardNotifier
+public class LiquidContainer : Container
 {
     public bool ContainsHazard { get; set; }
     public LiquidContainer(int mass, double height, double tareWeight, double depth, double maxPayload, bool containsHazard) : 
         base(mass, height, tareWeight, depth, maxPayload)
     {
-        SerialNumber = CreateSerialNumber();
         ContainsHazard = containsHazard;
     }
 
-
-    public override string CreateSerialNumber()
-    {
-        string serNum = "KON-L";
-        int randNum = new Random().Next();
-        // TODO make sure the numbers are unique
-        string serialNum = serNum + randNum;
-        return serNum;
-    }
-
+    protected override string GetContType() => "L";
     public override void EmptyCargo()
     {
-        
+        Mass = 0;
     }
 
-    public override void LoadCargo(double addMass)
+    public override void LoadCargo(double mass)
     {
-        if (ContainsHazard)
+        double maxMass = ContainsHazard ? MaxPayload * 0.5 : MaxPayload * 0.9;
+        if (Mass + mass > maxMass)
         {
-            if (addMass + Mass <= 0.5 * MaxPayload)
-            {
-                Mass += addMass;
-            }
-            else
-            {
-                Console.WriteLine("Attempt to perform a dangerous operation: weight of hazardous cargo can't exceed 50%");
-            }
+            throw new Exception($"Maximum weight exceeded in container {SerialNumber}");
         }
-        else
-        {
-            if (addMass + Mass <= 0.9 * MaxPayload)
-            {
-                Mass += addMass;
-            }
-            else
-            {
-                Console.WriteLine("Attempt to perform a dangerous operation: weight of cargo can't exceed 90%");
-            }
-        }
+        Mass += mass;
     }
-
-    public void SendNotification(string notification)
+    
+    public override void SendNotification(string message)
     {
-        Console.WriteLine(notification + SerialNumber);
-        // TODO should it be virtual?
-        // how to implement serial number?
+        Console.WriteLine($"HAZARD ALERT: {message} | Container: {SerialNumber} (Hazardous: {ContainsHazard})");
     }
 }
